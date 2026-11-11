@@ -53,6 +53,7 @@
   .tanks{display:grid;grid-template-columns:1fr 1fr;gap:8px}
   .tanks button{border:2px solid var(--line);background:transparent;color:var(--ink);border-radius:14px;
     padding:14px 6px;font-size:1.15rem;font-weight:800;cursor:pointer;transition:.15s}
+  .plants button{font-size:1.05rem}
   .tanks button small{display:block;font-size:.72rem;font-weight:600;color:var(--muted);margin-top:2px}
   .tanks button.on{border-color:transparent;color:#fff;background:linear-gradient(135deg,var(--blue),var(--cyan));
     box-shadow:0 6px 16px rgba(21,101,192,.35)}
@@ -141,7 +142,15 @@
 <div class="wrap">
 
   <div class="card">
-    <div class="lbl"><i>1</i>Depósito</div>
+    <div class="lbl"><i>1</i>Planta</div>
+    <div class="tanks plants" id="plants">
+      <button data-p="hellin" data-c="120000" data-o="h">Hellín<small>120.000 L · horizontal</small></button>
+      <button data-p="tobarra" data-c="60000" data-o="h">Tobarra<small>60.000 L · horizontal</small></button>
+      <button data-p="casas" data-c="60000" data-o="v">Casas-Ibáñez<small>60.000 L · vertical</small></button>
+      <button data-p="castillejo" data-c="60000" data-o="v">Castillejo<small>Gasinera · 60.000 L · vertical</small></button>
+    </div>
+    <button class="link" id="otherLink">Otro depósito…</button>
+    <div id="otherBox" style="display:none;margin-top:10px">
     <div class="tanks" id="tanks">
       <button data-v="60000">60.000<small>litros</small></button>
       <button data-v="80000">80.000<small>litros</small></button>
@@ -155,6 +164,7 @@
     <div class="orient" id="orient">
       <button data-o="v">▮ Vertical</button>
       <button data-o="h">▬ Horizontal</button>
+    </div>
     </div>
   </div>
 
@@ -250,7 +260,17 @@
     if(save) store('o_'+cap, o);
     calc();
   }
-  document.querySelectorAll('#orient button').forEach(b=>b.onclick=()=>setOrient(b.dataset.o,true));
+  document.querySelectorAll('#orient button').forEach(b=>b.onclick=()=>{ markPlant(null); setOrient(b.dataset.o,true); });
+  function markPlant(id){ document.querySelectorAll('#plants button').forEach(b=>b.classList.toggle('on', b.dataset.p===id)); store('plant', id||''); }
+  function setPlant(b){
+    markPlant(b.dataset.p);
+    $('otherBox').style.display='none';
+    cap=+b.dataset.c;
+    document.querySelectorAll('#tanks button').forEach(x=>x.classList.toggle('on', +x.dataset.v===cap));
+    setOrient(b.dataset.o,false);
+  }
+  document.querySelectorAll('#plants button').forEach(b=>b.onclick=()=>setPlant(b));
+  $('otherLink').onclick=()=>{ $('otherBox').style.display='block'; };
 
   function setTank(v, custom){
     cap = v;
@@ -258,9 +278,9 @@
     store('cap', v);
     setOrient(load('o_'+v) || DEF_O[v] || 'v');
   }
-  document.querySelectorAll('#tanks button').forEach(b=>b.onclick=()=>{ $('customBox').style.display='none'; setTank(+b.dataset.v); });
+  document.querySelectorAll('#tanks button').forEach(b=>b.onclick=()=>{ markPlant(null); $('customBox').style.display='none'; setTank(+b.dataset.v); });
   $('customLink').onclick=()=>{ $('customBox').style.display='flex'; $('custom').focus(); };
-  $('custom').oninput=()=>{ const v=+$('custom').value; if(v>0) setTank(v,true); };
+  $('custom').oninput=()=>{ const v=+$('custom').value; if(v>0){ markPlant(null); setTank(v,true);} };
 
   function markDens(){ const r=+$('rho').value; document.querySelectorAll('#dens button').forEach(b=>b.classList.toggle('on', +b.dataset.v===r)); }
   document.querySelectorAll('#dens button').forEach(b=>b.onclick=()=>{ $('rho').value=b.dataset.v; markDens(); store('rho',b.dataset.v); calc(); });
@@ -318,12 +338,14 @@
     }
   }
 
-  const sc=+load('cap'), sr=load('rho');
+  const sp=load('plant'), sc=+load('cap'), sr=load('rho');
   if(sr) $('rho').value=sr;
   markDens();
-  if([60000,80000,100000,120000].includes(sc)) setTank(sc);
-  else if(sc>0){ $('customBox').style.display='flex'; $('custom').value=sc; setTank(sc,true); }
-  else setTank(60000);
+  const pb = sp && document.querySelector('#plants button[data-p="'+sp+'"]');
+  if(pb) setPlant(pb);
+  else if([60000,80000,100000,120000].includes(sc)){ $('otherBox').style.display='block'; setTank(sc); }
+  else if(sc>0){ $('otherBox').style.display='block'; $('customBox').style.display='flex'; $('custom').value=sc; setTank(sc,true); }
+  else setPlant(document.querySelector('#plants button'));
 })();
 </script>
 </body>
