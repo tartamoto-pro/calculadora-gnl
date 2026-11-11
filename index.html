@@ -114,6 +114,12 @@
   .pill{padding:8px 14px;border-radius:999px;font-weight:800;font-size:.9rem}
   .pill.ok{background:#0f9d58}.pill.warn{background:#e67700}.pill.bad{background:#d93025}
 
+  .orient{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:12px;background:var(--bg);padding:4px;border-radius:12px}
+  .orient button{border:none;background:transparent;color:var(--muted);font-weight:800;padding:10px;border-radius:9px;cursor:pointer;font-size:.9rem}
+  .orient button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.12)}
+  .res.h .resgrid{grid-template-columns:1fr}
+  .res.h .tank{height:130px;border-radius:70px/65px}
+  .note{font-size:.8rem;opacity:.75;margin-top:10px;line-height:1.4}
   details{font-size:.88rem;color:var(--muted)}
   details summary{cursor:pointer;font-weight:700;color:var(--ink)}
   details p{margin:8px 0;line-height:1.45}
@@ -145,6 +151,10 @@
     <button class="link" id="customLink">Otro tamaño…</button>
     <div id="customBox" class="num">
       <div class="field"><input type="number" id="custom" inputmode="numeric" placeholder="Capacidad"><span class="u">L</span></div>
+    </div>
+    <div class="orient" id="orient">
+      <button data-o="v">▮ Vertical</button>
+      <button data-o="h">▬ Horizontal</button>
     </div>
   </div>
 
@@ -182,13 +192,13 @@
     <div class="hint">Si el albarán trae la densidad, ponla aquí.</div>
   </div>
 
-  <div class="card res">
+  <div class="card res" id="resCard">
     <div class="lbl" style="margin-bottom:14px">Resultado</div>
     <div class="resgrid">
       <div class="tank">
         <div class="liq add" id="vAdd"></div>
         <div class="liq old" id="vOld"></div>
-        <div class="lim" style="bottom:95%"></div>
+        <div class="lim" id="limLine" style="bottom:95%"></div>
       </div>
       <div>
         <div style="opacity:.75;font-weight:600;font-size:.9rem">Nivel final</div>
@@ -201,15 +211,17 @@
       <div class="stat"><span>Litros finales</span><b id="finL">–</b></div>
       <div class="stat"><span>Caben hasta 95 %</span><b id="room">–</b></div>
       <div class="stat"><span>Ahora hay</span><b id="nowL">–</b></div>
+      <div class="stat" id="volBox" style="display:none;grid-column:1/-1"><span>Llenado real en litros</span><b id="volPct">–</b></div>
     </div>
     <div class="alert ok" id="msg"></div>
+    <div class="note" id="hNote" style="display:none">Depósito horizontal: el nivel se toma como % de altura del indicador y se pasa a litros por la forma del cilindro. El aviso salta al 95 % de los litros (≈ 89,6 % de altura) para ir del lado seguro. Si vuestro indicador ya marca litros, pon “Vertical”.</div>
   </div>
 
   <div class="card">
     <details>
       <summary>Cómo calcula</summary>
       <p>Litros que entran = kg ÷ densidad × 1000. A 450 kg/m³, 1.000 kg son unos 2.222 L (≈3,7 % en 60.000 L; ≈1,9 % en 120.000 L).</p>
-      <p>El nivel se toma como % de volumen. Si el indicador marca en pulgadas/mbar, pásalo con la tabla de aforo. Es una estimación: manda siempre el indicador del depósito.</p>
+      <p>Verticales: el % del indicador es % de litros. Horizontales: el % se toma como altura y se convierte con la fórmula del segmento circular (sin contar los fondos abombados).</p><p> Si el indicador marca en pulgadas/mbar, pásalo con la tabla de aforo. Es una estimación: manda siempre el indicador del depósito.</p>
     </details>
   </div>
 </div>
@@ -223,15 +235,28 @@
 (function(){
   const LIM = 95;
   const $ = id => document.getElementById(id);
+  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
   const fmt = (n,d=0) => n.toLocaleString('es-ES',{minimumFractionDigits:d,maximumFractionDigits:d});
   const store=(k,v)=>{try{localStorage.setItem('gnl_'+k,v)}catch(e){}};
   const load=k=>{try{return localStorage.getItem('gnl_'+k)}catch(e){return null}};
-  let cap = 60000;
+  let cap = 60000, orient = 'v';
+  const DEF_O = {60000:'v',80000:'v',100000:'h',120000:'h'};
+  // fracción de volumen de un cilindro horizontal a fracción de altura h
+  const volFrac = h => { h=clamp(h,0,1); const t=2*Math.acos(1-2*h); return (t-Math.sin(t))/(2*Math.PI); };
+  const hFrac = v => { v=clamp(v,0,1); let a=0,b=1; for(let i=0;i<50;i++){ const m=(a+b)/2; volFrac(m)<v?a=m:b=m; } return (a+b)/2; };
+  function setOrient(o, save){
+    orient=o;
+    document.querySelectorAll('#orient button').forEach(b=>b.classList.toggle('on', b.dataset.o===o));
+    if(save) store('o_'+cap, o);
+    calc();
+  }
+  document.querySelectorAll('#orient button').forEach(b=>b.onclick=()=>setOrient(b.dataset.o,true));
 
   function setTank(v, custom){
     cap = v;
     document.querySelectorAll('#tanks button').forEach(b=>b.classList.toggle('on', +b.dataset.v===v && !custom));
-    store('cap', v); calc();
+    store('cap', v);
+    setOrient(load('o_'+v) || DEF_O[v] || 'v');
   }
   document.querySelectorAll('#tanks button').forEach(b=>b.onclick=()=>{ $('customBox').style.display='none'; setTank(+b.dataset.v); });
   $('customLink').onclick=()=>{ $('customBox').style.display='flex'; $('custom').focus(); };
@@ -241,7 +266,6 @@
   document.querySelectorAll('#dens button').forEach(b=>b.onclick=()=>{ $('rho').value=b.dataset.v; markDens(); store('rho',b.dataset.v); calc(); });
   $('rho').oninput=()=>{ markDens(); store('rho',$('rho').value); calc(); };
 
-  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
   function setLvl(v){ v=clamp(Math.round(v*2)/2,0,100); $('lvl').value=v; $('lvlR').value=v; calc(); }
   $('lvl').oninput=()=>{ $('lvlR').value=$('lvl').value; calc(); };
   $('lvlR').oninput=()=>{ $('lvl').value=$('lvlR').value; calc(); };
@@ -253,7 +277,11 @@
 
   function calc(){
     const lvl=clamp(+$('lvl').value||0,0,100), kg=Math.max(0,+$('kg').value||0), rho=+$('rho').value||0;
-    const nowL=cap*lvl/100;
+    const H = orient==='h';
+    const nowL = H ? cap*volFrac(lvl/100) : cap*lvl/100;
+    $('resCard').classList.toggle('h',H);
+    $('hNote').style.display = H?'block':'none';
+    $('volBox').style.display = H?'block':'none';
     $('lvlL').textContent='≈ '+fmt(nowL)+' L dentro ahora';
     $('nowL').textContent=fmt(nowL)+' L';
     const m=$('msg'), bp=$('barP');
@@ -262,7 +290,11 @@
       m.className='alert warn'; m.textContent='Revisa la densidad: el GNL anda entre 420 y 470 kg/m³.';
       bp.className='pill warn'; bp.textContent='Revisar'; return;
     }
-    const addL=kg/rho*1000, finL=nowL+addL, fin=finL/cap*100;
+    const addL=kg/rho*1000, finL=nowL+addL, finV=finL/cap*100;
+    const fin = H ? (finV>=100?100+(finV-100):hFrac(finL/cap)*100) : finV;
+    const limH = H ? hFrac(LIM/100)*100 : LIM;
+    $('limLine').style.bottom = limH+'%';
+    $('volPct').textContent = fmt(nowL/cap*100,1)+' % → '+fmt(finV,1)+' % de litros';
     const roomL=Math.max(0,cap*LIM/100-nowL), roomKg=roomL*rho/1000;
 
     $('fin').innerHTML=fmt(fin,1)+'<small>%</small>';
@@ -274,11 +306,11 @@
     $('vOld').style.height=Math.min(lvl,100)+'%';
     $('vAdd').style.height=Math.min(fin,100)+'%';
 
-    if(fin>LIM){
+    if(finV>LIM){
       m.className='alert bad'; m.textContent='⛔ Se pasa del 95 % en '+fmt(kg-roomKg)+' kg. Máximo a descargar: '+fmt(roomKg)+' kg.';
       bp.className='pill bad'; bp.textContent='No cabe';
-    } else if(fin>LIM-3){
-      m.className='alert warn'; m.textContent='⚠️ Justo: queda a '+fmt(LIM-fin,1)+' puntos del 95 %. Vigila el final de la descarga.';
+    } else if(finV>LIM-3){
+      m.className='alert warn'; m.textContent='⚠️ Justo: queda a '+fmt(LIM-finV,1)+' puntos del 95 % en litros. Vigila el final de la descarga.';
       bp.className='pill warn'; bp.textContent='Justo';
     } else {
       m.className='alert ok'; m.textContent='✔ Cabe. Aún entrarían '+fmt(roomKg-kg)+' kg más hasta el 95 %.';
