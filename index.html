@@ -148,9 +148,11 @@
       <button data-p="tobarra" data-c="60000" data-o="h">Tobarra<small>60.000 L · horizontal</small></button>
       <button data-p="casas" data-c="60000" data-o="v">Casas-Ibáñez<small>60.000 L · vertical</small></button>
       <button data-p="castillejo" data-c="60000" data-o="v">Castillejo<small>Gasinera · 60.000 L · vertical</small></button>
+      <button data-p="airbus" style="grid-column:1/-1">Airbus Albacete<small id="airbusSub">tamaño por confirmar · elígelo abajo</small></button>
     </div>
     <button class="link" id="otherLink">Otro depósito…</button>
     <div id="otherBox" style="display:none;margin-top:10px">
+    <div class="hint" id="airbusHint" style="display:none;margin:0 0 8px">Elige el tamaño y la forma del depósito de Airbus. Se queda guardado.</div>
     <div class="tanks" id="tanks">
       <button data-v="60000">60.000<small>litros</small></button>
       <button data-v="80000">80.000<small>litros</small></button>
@@ -260,9 +262,18 @@
     if(save) store('o_'+cap, o);
     calc();
   }
-  document.querySelectorAll('#orient button').forEach(b=>b.onclick=()=>{ markPlant(null); setOrient(b.dataset.o,true); });
-  function markPlant(id){ document.querySelectorAll('#plants button').forEach(b=>b.classList.toggle('on', b.dataset.p===id)); store('plant', id||''); }
+  document.querySelectorAll('#orient button').forEach(b=>b.onclick=()=>{ if(plant!=='airbus') markPlant(null); setOrient(b.dataset.o,true); airbusLabel(); });
+  let plant=null;
+  function markPlant(id){ plant=id; document.querySelectorAll('#plants button').forEach(b=>b.classList.toggle('on', b.dataset.p===id)); store('plant', id||''); $('airbusHint').style.display = id==='airbus'?'block':'none'; }
+  function airbusLabel(){ const c=+load('airbus_cap'); $('airbusSub').textContent = c ? fmt(c)+' L · '+((load('o_'+c)||DEF_O[c]||'v')==='h'?'horizontal':'vertical')+' (por confirmar)' : 'tamaño por confirmar · elígelo abajo'; }
   function setPlant(b){
+    if(!b.dataset.c){
+      markPlant('airbus'); $('otherBox').style.display='block';
+      const c=+load('airbus_cap');
+      if(c){ document.querySelectorAll('#tanks button').forEach(x=>x.classList.toggle('on', +x.dataset.v===c)); cap=c; setOrient(load('o_'+c)||DEF_O[c]||'v',false); }
+      else { document.querySelectorAll('#tanks button').forEach(x=>x.classList.remove('on')); }
+      return;
+    }
     markPlant(b.dataset.p);
     $('otherBox').style.display='none';
     cap=+b.dataset.c;
@@ -278,7 +289,7 @@
     store('cap', v);
     setOrient(load('o_'+v) || DEF_O[v] || 'v');
   }
-  document.querySelectorAll('#tanks button').forEach(b=>b.onclick=()=>{ markPlant(null); $('customBox').style.display='none'; setTank(+b.dataset.v); });
+  document.querySelectorAll('#tanks button').forEach(b=>b.onclick=()=>{ if(plant==='airbus') store('airbus_cap', b.dataset.v); else markPlant(null); $('customBox').style.display='none'; setTank(+b.dataset.v); airbusLabel(); });
   $('customLink').onclick=()=>{ $('customBox').style.display='flex'; $('custom').focus(); };
   $('custom').oninput=()=>{ const v=+$('custom').value; if(v>0){ markPlant(null); setTank(v,true);} };
 
@@ -341,6 +352,7 @@
   const sp=load('plant'), sc=+load('cap'), sr=load('rho');
   if(sr) $('rho').value=sr;
   markDens();
+  airbusLabel();
   const pb = sp && document.querySelector('#plants button[data-p="'+sp+'"]');
   if(pb) setPlant(pb);
   else if([60000,80000,100000,120000].includes(sc)){ $('otherBox').style.display='block'; setTank(sc); }
