@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Butanhogar · Descarga GNL</title>
-<meta name="theme-color" content="#0a1f44">
+<meta name="theme-color" content="#33466b">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -14,12 +14,12 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <style>
   :root{
-    --navy:#0a1f44; --blue:#1565c0; --cyan:#00b4d8; --orange:#ff8c00; --amber:#ffc940;
-    --bg:#eef3f8; --card:#ffffff; --ink:#0f1d2b; --muted:#64748b; --line:#e2e8f0;
+    --navy:#33466b; --blue:#33466b; --cyan:#e8701a; --orange:#ff8c00; --amber:#ffc940;
+    --bg:#f3f5f8; --card:#ffffff; --ink:#14202e; --muted:#5d6b7c; --line:#d9dfe7; --brand:#33466b; --accent:#e8701a;
     --ok:#0f9d58; --ok-soft:#e3f6ec; --warn:#e67700; --warn-soft:#fff4e0; --bad:#d93025; --bad-soft:#fdecea;
   }
   @media (prefers-color-scheme: dark){
-    :root{ --bg:#071226; --card:#0f2140; --ink:#e8f0fa; --muted:#93a4ba; --line:#1e3558;
+    :root{ --bg:#0f141b; --card:#18202b; --ink:#e7edf4; --muted:#9aa8b8; --line:#2b3644; --brand:#9db4dc; --accent:#f08a3c;
       --ok-soft:#0e3325; --warn-soft:#3a2a10; --bad-soft:#3d1515; --ok:#4ade80; --warn:#ffb347; --bad:#ff7b72; }
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -27,27 +27,17 @@
   body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);
     padding-bottom:calc(96px + env(safe-area-inset-bottom))}
 
-  /* HEADER */
-  header{position:relative;overflow:hidden;color:#fff;
-    background:linear-gradient(135deg,var(--navy) 0%,#123a7a 55%,#0077b6 100%);
-    padding:calc(18px + env(safe-area-inset-top)) 20px 34px;border-radius:0 0 28px 28px}
-  header::after{content:"";position:absolute;right:-60px;top:-40px;width:220px;height:220px;border-radius:50%;
-    background:radial-gradient(circle,rgba(0,180,216,.45),transparent 70%)}
-  .brand,.tag{max-width:492px;margin-left:auto;margin-right:auto}
-  .brand{display:flex;align-items:center;gap:12px;position:relative;z-index:1}
-  .brand img{width:46px;height:46px;border-radius:12px;box-shadow:0 4px 14px rgba(0,0,0,.35)}
-  .brand h1{margin:0;font-size:1.75rem;font-weight:800;letter-spacing:-.5px}
-  .brand h1 span{color:var(--amber)}
-  .tag{position:relative;z-index:1;margin-top:10px;font-size:.95rem;opacity:.85}
-  .tag b{color:#fff}
-
-  .wrap{max-width:520px;margin:-18px auto 0;padding:0 14px;position:relative;z-index:2}
-  .card{background:var(--card);border-radius:20px;padding:16px;margin-bottom:12px;
-    box-shadow:0 2px 10px rgba(10,31,68,.08);border:1px solid var(--line)}
-  .lbl{display:flex;align-items:center;gap:8px;font-weight:700;font-size:.92rem;color:var(--muted);
-    text-transform:uppercase;letter-spacing:.4px;margin-bottom:12px}
-  .lbl i{font-style:normal;display:grid;place-items:center;width:26px;height:26px;border-radius:8px;
-    background:linear-gradient(135deg,var(--blue),var(--cyan));color:#fff;font-size:.8rem}
+  /* HEADER (igual que la app de certificados) */
+  header.marca{background:#fff;color:#0b2d43;position:relative;overflow:hidden;
+    padding:calc(16px + env(safe-area-inset-top)) 16px 12px;border-bottom:3px solid #ffbd59;display:flex;flex-direction:column;align-items:center}
+  header.marca .sol{position:absolute;left:-70px;top:-95px;width:190px;height:190px;border-radius:50%;background:#ffbd59}
+  header.marca img{position:relative;display:block;height:44px;width:auto;max-width:60vw}
+  header.marca h1{position:relative;margin:6px 0 0;font:800 .8rem/1 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;letter-spacing:.38em;color:#0b2d43;padding-left:.38em}
+  .wrap{max-width:520px;margin:16px auto 0;padding:0 14px;position:relative;z-index:2}
+  .card{background:var(--card);border-radius:14px;padding:16px;margin-bottom:14px;border:1px solid var(--line)}
+  .lbl{display:flex;align-items:center;gap:8px;font-weight:700;font-size:1rem;color:var(--brand);margin-bottom:12px}
+  .lbl i{font-style:normal;display:grid;place-items:center;width:22px;height:22px;border-radius:50%;
+    background:var(--accent);color:#fff;font-size:.8rem;flex-shrink:0}
 
   /* tank chips */
   .tanks{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -55,47 +45,47 @@
     padding:14px 6px;font-size:1.15rem;font-weight:800;cursor:pointer;transition:.15s}
   .plants button{font-size:1.05rem}
   .tanks button small{display:block;font-size:.72rem;font-weight:600;color:var(--muted);margin-top:2px}
-  .tanks button.on{border-color:transparent;color:#fff;background:linear-gradient(135deg,var(--blue),var(--cyan));
-    box-shadow:0 6px 16px rgba(21,101,192,.35)}
+  .tanks button.on{border-color:var(--brand);color:#fff;background:var(--brand);
+    box-shadow:0 4px 12px rgba(51,70,107,.3)}
   .tanks button.on small{color:rgba(255,255,255,.85)}
 
   /* number inputs with steppers */
   .num{display:flex;align-items:center;gap:8px}
   .num button{flex:0 0 52px;height:56px;border-radius:14px;border:none;font-size:1.6rem;font-weight:700;
-    background:var(--bg);color:var(--blue);cursor:pointer}
+    background:var(--bg);color:var(--brand);cursor:pointer}
   .num .field{flex:1;position:relative}
   .num input{width:100%;height:56px;border:2px solid var(--line);border-radius:14px;background:var(--bg);
     color:var(--ink);font-size:1.7rem;font-weight:800;text-align:center;padding:0 44px 0 10px;
     -moz-appearance:textfield}
-  .num input:focus{outline:none;border-color:var(--cyan)}
+  .num input:focus{outline:none;border-color:var(--accent)}
   .num input::-webkit-outer-spin-button,.num input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
   .num .u{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--muted);font-weight:700}
-  input[type=range]{width:100%;margin:14px 0 2px;accent-color:var(--blue);height:28px}
+  input[type=range]{width:100%;margin:14px 0 2px;accent-color:var(--accent);height:28px}
   .hint{color:var(--muted);font-size:.85rem;margin-top:6px}
 
   .chips{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
   .chips button{border:2px solid var(--line);background:transparent;color:var(--ink);border-radius:12px;
     padding:10px 4px;font-weight:700;font-size:.95rem;cursor:pointer}
   .chips button small{display:block;font-size:.7rem;color:var(--muted);font-weight:600}
-  .chips button.on{border-color:var(--cyan);background:rgba(0,180,216,.12)}
+  .chips button.on{border-color:var(--accent);background:rgba(232,112,26,.12)}
   .rho{margin-top:10px}
 
   /* result */
-  .res{background:linear-gradient(160deg,var(--navy),#123a7a);color:#fff;border:none}
+  .res{background:linear-gradient(160deg,#33466b,#243453);color:#fff;border:none}
   .res .lbl{color:rgba(255,255,255,.7)}
   .resgrid{display:grid;grid-template-columns:96px 1fr;gap:18px;align-items:center}
   .tank{position:relative;height:220px;border-radius:44px/26px;border:3px solid rgba(255,255,255,.75);
     background:rgba(255,255,255,.08);overflow:hidden}
   .liq{position:absolute;left:0;right:0;bottom:0;transition:height .45s cubic-bezier(.2,.8,.2,1)}
-  .liq.old{background:linear-gradient(180deg,#4fa3ff,#1565c0)}
-  .liq.add{background:linear-gradient(180deg,#5ef0ff,#00b4d8)}
+  .liq.old{background:linear-gradient(180deg,#7fa6d9,#4b6797)}
+  .liq.add{background:linear-gradient(180deg,#ffb066,#e8701a)}
   .liq.add::before{content:"";position:absolute;top:-6px;left:-10%;right:-10%;height:12px;border-radius:50%;
     background:rgba(255,255,255,.35)}
   .lim{position:absolute;left:0;right:0;border-top:2px dashed #ff6b6b}
   .big{font-size:3.6rem;font-weight:900;line-height:1;letter-spacing:-2px}
   .big small{font-size:1.4rem;opacity:.75;letter-spacing:0}
-  .delta{display:inline-block;margin-top:6px;padding:4px 10px;border-radius:999px;background:rgba(0,180,216,.25);
-    color:#7ee8ff;font-weight:800;font-size:.95rem}
+  .delta{display:inline-block;margin-top:6px;padding:4px 10px;border-radius:999px;background:rgba(232,112,26,.25);
+    color:#ffc48f;font-weight:800;font-size:.95rem}
   .stats{margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:8px}
   .stat{background:rgba(255,255,255,.08);border-radius:12px;padding:10px}
   .stat span{display:block;font-size:.72rem;opacity:.7;text-transform:uppercase;letter-spacing:.3px}
@@ -108,7 +98,7 @@
 
   /* sticky bottom bar */
   .bar{position:fixed;left:0;right:0;bottom:0;z-index:10;padding:10px 16px calc(10px + env(safe-area-inset-bottom));
-    background:rgba(10,31,68,.96);backdrop-filter:blur(10px);color:#fff;display:flex;align-items:center;
+    background:rgba(51,70,107,.97);backdrop-filter:blur(10px);color:#fff;display:flex;align-items:center;
     justify-content:space-between;gap:10px;box-shadow:0 -4px 20px rgba(0,0,0,.25)}
   .bar .t{font-size:.78rem;opacity:.7;text-transform:uppercase;letter-spacing:.4px}
   .bar .v{font-size:1.9rem;font-weight:900}
@@ -125,18 +115,16 @@
   details summary{cursor:pointer;font-weight:700;color:var(--ink)}
   details p{margin:8px 0;line-height:1.45}
   #customBox{display:none;margin-top:10px}
-  .link{background:none;border:none;color:var(--blue);font-weight:700;padding:8px 0 0;cursor:pointer;font-size:.9rem}
-  @media (prefers-color-scheme: dark){ .link{color:var(--cyan)} .num button{color:var(--cyan)} }
+  .link{background:none;border:none;color:var(--accent);font-weight:700;padding:8px 0 0;cursor:pointer;font-size:.9rem}
+  @media (prefers-color-scheme: dark){ .tanks button.on{color:#0f141b} }
 </style>
 </head>
 <body>
 
-<header>
-  <div class="brand">
-    <img src="icon-192.png" alt="">
-    <h1>Butan<span>hogar</span></h1>
-  </div>
-  <p class="tag">Calculadora de descarga de <b>GNL</b></p>
+<header class="marca">
+  <span class="sol" aria-hidden="true"></span>
+  <img src="logo-butanhogar.png" alt="butanhogar" width="574" height="114">
+  <h1>DESCARGA GNL</h1>
 </header>
 
 <div class="wrap">
