@@ -136,7 +136,7 @@
       <button data-p="tobarra" data-c="59900" data-o="h">Tobarra<small>59.900 L · horizontal</small></button>
       <button data-p="casas" data-c="60000" data-o="v">Casas-Ibáñez<small>60.000 L · vertical</small></button>
       <button data-p="castillejo" data-c="60000" data-o="v">Castillejo<small>Gasinera · 60.000 L · vertical</small></button>
-      <button data-p="airbus" style="grid-column:1/-1">Airbus Albacete<small id="airbusSub">tamaño por confirmar · elígelo abajo</small></button>
+      <button data-p="airbus" data-c="59752" data-o="h" style="grid-column:1/-1">Airbus Albacete<small>59.752 L · horizontal</small></button>
     </div>
     <button class="link" id="otherLink">Otro depósito…</button>
     <div id="otherBox" style="display:none;margin-top:10px">
@@ -253,7 +253,7 @@
   document.querySelectorAll('#orient button').forEach(b=>b.onclick=()=>{ if(plant!=='airbus') markPlant(null); setOrient(b.dataset.o,true); airbusLabel(); });
   let plant=null;
   function markPlant(id){ plant=id; document.querySelectorAll('#plants button').forEach(b=>b.classList.toggle('on', b.dataset.p===id)); store('plant', id||''); $('airbusHint').style.display = id==='airbus'?'block':'none'; }
-  function airbusLabel(){ const c=+load('airbus_cap'); $('airbusSub').textContent = c ? fmt(c)+' L · '+((load('o_'+c)||DEF_O[c]||'v')==='h'?'horizontal':'vertical')+' (por confirmar)' : 'tamaño por confirmar · elígelo abajo'; }
+  function airbusLabel(){ if(!$('airbusSub')) return; const c=+load('airbus_cap'); $('airbusSub').textContent = c ? fmt(c)+' L · '+((load('o_'+c)||DEF_O[c]||'v')==='h'?'horizontal':'vertical')+' (por confirmar)' : 'tamaño por confirmar · elígelo abajo'; }
   function setPlant(b){
     if(!b.dataset.c){
       markPlant('airbus'); $('otherBox').style.display='block';
