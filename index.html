@@ -111,6 +111,13 @@
   .res.h .resgrid{grid-template-columns:1fr}
   .res.h .tank{height:130px;border-radius:70px/65px}
   .note{font-size:.8rem;opacity:.75;margin-top:10px;line-height:1.4}
+  .falta{margin-top:12px;display:flex;align-items:center;justify-content:space-between;gap:10px;
+    background:rgba(232,112,26,.10);border:1.5px solid rgba(232,112,26,.45);border-radius:14px;padding:12px 14px}
+  .falta span{display:block;font-size:.82rem;font-weight:700;color:var(--muted)}
+  .falta b{display:block;font-size:1.9rem;font-weight:900;color:var(--accent);line-height:1.1;font-variant-numeric:tabular-nums}
+  .falta small{display:block;font-size:.8rem;color:var(--muted)}
+  .falta button{flex:0 0 auto;border:none;border-radius:12px;background:var(--accent);color:#fff;font-weight:800;
+    font-size:.85rem;padding:10px 12px;cursor:pointer;line-height:1.15}
   details{font-size:.88rem;color:var(--muted)}
   details summary{cursor:pointer;font-weight:700;color:var(--ink)}
   details p{margin:8px 0;line-height:1.45}
@@ -167,6 +174,10 @@
     </div>
     <input type="range" id="lvlR" min="0" max="100" step="0.5" value="30">
     <div class="hint" id="lvlL"></div>
+    <div class="falta">
+      <div><span id="faltaLbl">Faltan para llenarlo al 95 %</span><b id="faltaKg">–</b><small id="faltaL"></small></div>
+      <button type="button" id="usarFalta">Descargar<br>esto</button>
+    </div>
   </div>
 
   <div class="card">
@@ -292,6 +303,10 @@
   $('lvlM').onclick=()=>setLvl((+$('lvl').value||0)-1);
   $('lvlP').onclick=()=>setLvl((+$('lvl').value||0)+1);
   $('kg').oninput=calc;
+  $('usarFalta').onclick=()=>{ const rho=+$('rho').value||0; if(rho<300||rho>550) return;
+    const lvl=clamp(+$('lvl').value||0,0,100), nowL = orient==='h' ? cap*volFrac(lvl/100) : cap*lvl/100;
+    $('kg').value=Math.floor(Math.max(0,cap*LIM/100-nowL)*rho/1000/10)*10; calc();
+    $('resCard').scrollIntoView({behavior:'smooth',block:'start'}); };
   $('kgM').onclick=()=>{ $('kg').value=Math.max(0,(+$('kg').value||0)-500); calc(); };
   $('kgP').onclick=()=>{ $('kg').value=(+$('kg').value||0)+500; calc(); };
 
@@ -305,6 +320,10 @@
     $('lvlL').textContent='≈ '+fmt(nowL)+' L dentro ahora';
     $('nowL').textContent=fmt(nowL)+' L';
     const m=$('msg'), bp=$('barP');
+    const faltaL=Math.max(0,cap*LIM/100-nowL);
+    $('faltaLbl').textContent='Faltan para llenarlo al '+LIM+' %';
+    $('faltaL').textContent='≈ '+fmt(faltaL)+' L';
+    $('faltaKg').textContent = (rho<300||rho>550) ? '–' : fmt(Math.floor(faltaL*rho/1000/10)*10)+' kg';
     if(rho<300||rho>550){
       $('fin').innerHTML='–<small>%</small>'; $('barV').textContent='–';
       m.className='alert warn'; m.textContent='Revisa la densidad: el GNL anda entre 420 y 470 kg/m³.';
