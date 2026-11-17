@@ -121,7 +121,8 @@
   details{font-size:.88rem;color:var(--muted)}
   details summary{cursor:pointer;font-weight:700;color:var(--ink)}
   details p{margin:8px 0;line-height:1.45}
-  #customBox{display:none;margin-top:10px}
+  #customBox{display:flex;margin-top:4px}
+  #tanks,#customLink,#airbusHint{display:none!important}
   .link{background:none;border:none;color:var(--accent);font-weight:700;padding:8px 0 0;cursor:pointer;font-size:.9rem}
   @media (prefers-color-scheme: dark){ .tanks button.on{color:#0f141b} }
 </style>
@@ -155,8 +156,9 @@
       <button data-v="120000">120.000<small>litros</small></button>
     </div>
     <button class="link" id="customLink">Otro tamaño…</button>
+    <div class="hint" style="margin:0 0 8px">Pon los litros del depósito (capacidad geométrica de la placa) y si es vertical u horizontal.</div>
     <div id="customBox" class="num">
-      <div class="field"><input type="number" id="custom" inputmode="numeric" placeholder="Capacidad"><span class="u">L</span></div>
+      <div class="field"><input type="number" id="custom" inputmode="numeric" placeholder="Litros del depósito"><span class="u">L</span></div>
     </div>
     <div class="orient" id="orient">
       <button data-o="v">▮ Vertical</button>
@@ -275,13 +277,15 @@
     }
     markPlant(b.dataset.p);
     LIM = +(b.dataset.l||95);
-    $('otherBox').style.display='none';
+    $('otherBox').style.display='none'; $('otherLink').textContent='Otro depósito…';
     cap=+b.dataset.c;
     document.querySelectorAll('#tanks button').forEach(x=>x.classList.toggle('on', +x.dataset.v===cap));
     setOrient(b.dataset.o,false);
   }
   document.querySelectorAll('#plants button').forEach(b=>b.onclick=()=>setPlant(b));
-  $('otherLink').onclick=()=>{ $('otherBox').style.display='block'; };
+  $('otherLink').onclick=()=>{ const ob=$('otherBox'), open=ob.style.display!=='block';
+    ob.style.display=open?'block':'none'; $('otherLink').textContent=open?'Cerrar otro depósito':'Otro depósito…';
+    if(open){ const v=+$('custom').value; if(v>0){ markPlant(null); setTank(v,true);} else $('custom').focus(); } };
 
   function setTank(v, custom){
     cap = v;
@@ -364,8 +368,7 @@
   airbusLabel();
   const pb = sp && document.querySelector('#plants button[data-p="'+sp+'"]');
   if(pb) setPlant(pb);
-  else if([60000,80000,100000,120000].includes(sc)){ $('otherBox').style.display='block'; setTank(sc); }
-  else if(sc>0){ $('otherBox').style.display='block'; $('customBox').style.display='flex'; $('custom').value=sc; setTank(sc,true); }
+  else if(sc>0){ $('otherBox').style.display='block'; $('otherLink').textContent='Cerrar otro depósito'; $('custom').value=sc; setTank(sc,true); }
   else setPlant(document.querySelector('#plants button'));
 })();
 </script>
