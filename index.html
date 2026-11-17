@@ -250,9 +250,9 @@
     if(save) store('o_'+cap, o);
     calc();
   }
-  document.querySelectorAll('#orient button').forEach(b=>b.onclick=()=>{ if(plant!=='airbus') markPlant(null); setOrient(b.dataset.o,true); airbusLabel(); });
+  document.querySelectorAll('#orient button').forEach(b=>b.onclick=()=>{ markPlant(null); setOrient(b.dataset.o,true); airbusLabel(); });
   let plant=null;
-  function markPlant(id){ plant=id; document.querySelectorAll('#plants button').forEach(b=>b.classList.toggle('on', b.dataset.p===id)); store('plant', id||''); $('airbusHint').style.display = id==='airbus'?'block':'none'; }
+  function markPlant(id){ plant=id; document.querySelectorAll('#plants button').forEach(b=>b.classList.toggle('on', b.dataset.p===id)); store('plant', id||''); $('airbusHint').style.display='none'; }
   function airbusLabel(){ if(!$('airbusSub')) return; const c=+load('airbus_cap'); $('airbusSub').textContent = c ? fmt(c)+' L · '+((load('o_'+c)||DEF_O[c]||'v')==='h'?'horizontal':'vertical')+' (por confirmar)' : 'tamaño por confirmar · elígelo abajo'; }
   function setPlant(b){
     if(!b.dataset.c){
@@ -277,7 +277,7 @@
     store('cap', v);
     setOrient(load('o_'+v) || DEF_O[v] || 'v');
   }
-  document.querySelectorAll('#tanks button').forEach(b=>b.onclick=()=>{ if(plant==='airbus') store('airbus_cap', b.dataset.v); else markPlant(null); $('customBox').style.display='none'; setTank(+b.dataset.v); airbusLabel(); });
+  document.querySelectorAll('#tanks button').forEach(b=>b.onclick=()=>{ markPlant(null); $('customBox').style.display='none'; setTank(+b.dataset.v); airbusLabel(); });
   $('customLink').onclick=()=>{ $('customBox').style.display='flex'; $('custom').focus(); };
   $('custom').oninput=()=>{ const v=+$('custom').value; if(v>0){ markPlant(null); setTank(v,true);} };
 
