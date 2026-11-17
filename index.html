@@ -135,7 +135,7 @@
       <button data-p="hellin" data-c="128610" data-o="h">Hellín<small>128.610 L · horizontal</small></button>
       <button data-p="tobarra" data-c="59900" data-o="h">Tobarra<small>59.900 L · horizontal</small></button>
       <button data-p="casas" data-c="60000" data-o="v">Casas-Ibáñez<small>60.000 L · vertical</small></button>
-      <button data-p="castillejo" data-c="60000" data-o="v">Castillejo<small>Gasinera · 60.000 L · vertical</small></button>
+      <button data-p="castillejo" data-c="60000" data-o="v" data-l="90">Castillejo<small>Gasinera · 60.000 L · vertical · máx. 90 %</small></button>
       <button data-p="airbus" data-c="59752" data-o="h" style="grid-column:1/-1">Airbus Albacete<small>59.752 L · horizontal</small></button>
     </div>
     <button class="link" id="otherLink">Otro depósito…</button>
@@ -209,12 +209,12 @@
     <div class="stats">
       <div class="stat"><span>Litros que entran</span><b id="addL">–</b></div>
       <div class="stat"><span>Litros finales</span><b id="finL">–</b></div>
-      <div class="stat"><span>Caben hasta 95 %</span><b id="room">–</b></div>
+      <div class="stat"><span id="roomLbl">Caben hasta 95 %</span><b id="room">–</b></div>
       <div class="stat"><span>Ahora hay</span><b id="nowL">–</b></div>
       <div class="stat" id="volBox" style="display:none;grid-column:1/-1"><span>Llenado real en litros</span><b id="volPct">–</b></div>
     </div>
     <div class="alert ok" id="msg"></div>
-    <div class="note" id="hNote" style="display:none">Depósito horizontal: el nivel se toma como % de altura del indicador y se pasa a litros por la forma del cilindro. El aviso salta al 95 % de los litros, que es la capacidad útil de la placa (≈ 90 % de altura). Si vuestro indicador ya marca litros, pon “Vertical”.</div>
+    <div class="note" id="hNote" style="display:none">Depósito horizontal: el nivel se toma como % de altura del indicador y se pasa a litros por la forma del cilindro. El aviso salta al llenado máximo de la placa en litros (95 % ≈ 90 % de altura). Si vuestro indicador ya marca litros, pon “Vertical”.</div>
   </div>
 
   <div class="card">
@@ -233,7 +233,7 @@
 
 <script>
 (function(){
-  const LIM = 95;
+  let LIM = 95;
   const $ = id => document.getElementById(id);
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
   const fmt = (n,d=0) => n.toLocaleString('es-ES',{minimumFractionDigits:d,maximumFractionDigits:d});
@@ -252,7 +252,7 @@
   }
   document.querySelectorAll('#orient button').forEach(b=>b.onclick=()=>{ markPlant(null); setOrient(b.dataset.o,true); airbusLabel(); });
   let plant=null;
-  function markPlant(id){ plant=id; document.querySelectorAll('#plants button').forEach(b=>b.classList.toggle('on', b.dataset.p===id)); store('plant', id||''); $('airbusHint').style.display='none'; }
+  function markPlant(id){ plant=id; if(!id) LIM=95; document.querySelectorAll('#plants button').forEach(b=>b.classList.toggle('on', b.dataset.p===id)); store('plant', id||''); $('airbusHint').style.display='none'; }
   function airbusLabel(){ if(!$('airbusSub')) return; const c=+load('airbus_cap'); $('airbusSub').textContent = c ? fmt(c)+' L · '+((load('o_'+c)||DEF_O[c]||'v')==='h'?'horizontal':'vertical')+' (por confirmar)' : 'tamaño por confirmar · elígelo abajo'; }
   function setPlant(b){
     if(!b.dataset.c){
@@ -263,6 +263,7 @@
       return;
     }
     markPlant(b.dataset.p);
+    LIM = +(b.dataset.l||95);
     $('otherBox').style.display='none';
     cap=+b.dataset.c;
     document.querySelectorAll('#tanks button').forEach(x=>x.classList.toggle('on', +x.dataset.v===cap));
@@ -312,6 +313,7 @@
     const addL=kg/rho*1000, finL=nowL+addL, finV=finL/cap*100;
     const fin = H ? (finV>=100?100+(finV-100):hFrac(finL/cap)*100) : finV;
     const limH = H ? hFrac(LIM/100)*100 : LIM;
+    $('roomLbl').textContent='Caben hasta '+LIM+' %';
     $('limLine').style.bottom = limH+'%';
     $('volPct').textContent = fmt(nowL/cap*100,1)+' % → '+fmt(finV,1)+' % de litros';
     const roomL=Math.max(0,cap*LIM/100-nowL), roomKg=roomL*rho/1000;
@@ -326,13 +328,13 @@
     $('vAdd').style.height=Math.min(fin,100)+'%';
 
     if(finV>LIM){
-      m.className='alert bad'; m.textContent='⛔ Se pasa del 95 % en '+fmt(kg-roomKg)+' kg. Máximo a descargar: '+fmt(roomKg)+' kg.';
+      m.className='alert bad'; m.textContent='⛔ Se pasa del '+LIM+' % en '+fmt(kg-roomKg)+' kg. Máximo a descargar: '+fmt(roomKg)+' kg.';
       bp.className='pill bad'; bp.textContent='No cabe';
     } else if(finV>LIM-3){
-      m.className='alert warn'; m.textContent='⚠️ Justo: queda a '+fmt(LIM-finV,1)+' puntos del 95 % en litros. Vigila el final de la descarga.';
+      m.className='alert warn'; m.textContent='⚠️ Justo: queda a '+fmt(LIM-finV,1)+' puntos del '+LIM+' % en litros. Vigila el final de la descarga.';
       bp.className='pill warn'; bp.textContent='Justo';
     } else {
-      m.className='alert ok'; m.textContent='✔ Cabe. Aún entrarían '+fmt(roomKg-kg)+' kg más hasta el 95 %.';
+      m.className='alert ok'; m.textContent='✔ Cabe. Aún entrarían '+fmt(roomKg-kg)+' kg más hasta el '+LIM+' %.';
       bp.className='pill ok'; bp.textContent='Cabe';
     }
   }
